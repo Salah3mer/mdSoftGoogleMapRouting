@@ -1,0 +1,41 @@
+name: mdsoft_google_map_routing
+description: "A powerful Flutter package for real-time navigation and route
+  tracking using Google Maps API. This package supports background location
+  updates, route calculation, and customizable map styles."
+version: 0.0.1
+homepage: 'https://github.com/Salah3mer/mdSoftGoogleRouting.git'
+
+environment:
+  sdk: ^3.4.2
+  flutter: '>=3.3.0'
+
+dependencies:
+  dartz: ^0.10.1
+  dio: ^5.7.0
+  flutter:
+    sdk: flutter
+  flutter_background_service: ^5.1.0
+  flutter_background_service_android: ^6.3.0
+  flutter_background_service_ios: ^5.0.3
+  flutter_bloc: ^8.1.6
+  flutter_polyline_points: ^2.1.0
+  google_maps_flutter: ^2.10.0
+  google_maps_flutter_web: ^0.5.12
+  location: ^7.0.1
+  plugin_platform_interface: ^2.0.2
+  socket_io_client: ^3.1.1
+  toastification: ^2.3.0
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      some_platform:
+        pluginClass: somePluginClass
+  assets:
+    - assets/images/
