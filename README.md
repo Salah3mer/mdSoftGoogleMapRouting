@@ -23,7 +23,7 @@ Add the package to your `pubspec.yaml` file:
 dependencies:
   # mdsoft_google_map_routing: ^<latest_version>  
   mdsoft_google_map_routing:
-   git: 'https://github.com/Salah3mer/mdSoftGoogleRouting.git' 
+   git: 'https://github.com/Salah3mer/mdSoftGoogleMapRouting.git' 
   
 ```
 

@@ -65,7 +65,7 @@ class MapScreen extends StatelessWidget {
         ],
       ),
       body: MdSoftGoogleMapRouting(
-        isUser: true,
+        isUser: false,
         mapStyle: 'assets/json/map_style.json',
         startLocation: MdSoftLatLng(30.7052, 31.2677),
         endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782),
