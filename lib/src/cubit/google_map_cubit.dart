@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mdsoft_google_map_routing/google_map_routing.dart';
 import 'package:mdsoft_google_map_routing/src/api/dio_client.dart';
 import 'package:mdsoft_google_map_routing/src/api/failure.dart';
 import 'package:mdsoft_google_map_routing/src/models/dirction_route_model/dirction_route_model.dart';
@@ -198,19 +199,27 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   //? getDirections
   DirctionRouteModel? routeModel;
   late LatLng destination;
-  Future<void> getDirectionsRoute(
-      {required LatLng origin, required LatLng destination}) async {
+  Future<void> getDirectionsRoute({
+    required LatLng origin,
+    required LatLng destination,
+    required List<MdSoftLatLng> waypoints,
+  }) async {
+    final latlonWaypoints =
+        waypoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
     final result = await googleMapRepoImpl.getDirections(
-        origin: origin, destination: destination);
+        origin: origin, destination: destination, waypoints: latlonWaypoints);
     result.fold(
       (l) {
-        print(l.message.toString());
+        debugPrint(l.message.toString());
         emit(GetDirectionsErrorState(errorMessage: l.message));
       },
       (r) async {
         routeModel = r;
         this.destination = destination;
-        await setMarkers(startLocation: origin, destination: destination);
+        await setMarkers(
+            startLocation: origin,
+            destination: destination,
+            waypoints: latlonWaypoints);
         await getBounds(routeModel!.coordinates);
         updateRoute(origin);
         emit(GetDirectionsSuccessState());
@@ -319,7 +328,9 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   Future<void> setMarkers(
       {required LatLng startLocation,
       required LatLng destination,
+      required List<LatLng> waypoints,
       bool isUser = false}) async {
+    print(waypoints);
     markers.add(
       Marker(
         markerId: const MarkerId('currentLocation'),
@@ -337,6 +348,19 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         icon: await AppImages.goTo.toBitmapDescriptor(devicePixelRatio: 2.5),
       ),
     );
+    if (waypoints.isNotEmpty) {
+      for (var i = 0; i < waypoints.length; i++) {
+        markers.add(Marker(
+          markerId: MarkerId('waypoint ${i + 1}'),
+          position: waypoints[i],
+
+          infoWindow: InfoWindow(title: 'waypoint ${i + 1}'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          // icon: await AppImages.goTo.toBitmapDescriptor(devicePixelRatio: 2.5),
+        ));
+      }
+    }
+
     markers.removeWhere((marker) => marker.markerId.value == 'car');
 
     markers.add(

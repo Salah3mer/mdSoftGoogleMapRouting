@@ -138,6 +138,7 @@ plugins {
   // Initialize GoogleMapConfig with your API Key.
   GoogleMapConfig.initialize(
     apiKey: 'Your API Key',
+    socketBaseUrl : 'Your Socket Base URL',
   );
 
   ```
@@ -148,7 +149,9 @@ plugins {
   MdSoftGoogleMapRouting(
   mapStyle: 'assets/json/map_style.json', // Path to your custom map style JSON file.
   startLocation: MdSoftLatLng(30.7052, 31.2677), // Define the start location.
-  endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782), // Define the destination.
+  endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782),
+   // Define the destination.
+  waypoints : [MdSoftLatLng(30.7052, 31.2677),MdSoftLatLng(30.7052, 31.2677)]   // Define waypoints as List of MdSoftLatLng objects.
   floatingActionButtonIcon:
       const Icon(Icons.my_location, color: Colors.black), // Custom FAB icon.
 ),

@@ -22,44 +22,102 @@ class GoogleMapRepoImpl extends GoogleMapRepo {
   Future<Either<Failure, DirctionRouteModel>> getDirections({
     required LatLng origin,
     required LatLng destination,
+    List<LatLng> waypoints = const [],
   }) async {
     try {
-      final respnse = await dioClient
-          .get('http://192.168.1.60:1209/directions', queryParameters: {
+      final params = {
         'origin': '${origin.latitude},${origin.longitude}',
         'destination': '${destination.latitude},${destination.longitude}',
         'mode': 'driving',
         'key': apiKey,
-      });
-      if (respnse.statusCode != 200) {
-        return Left(
-            ServerFailure('Failed to fetch route: ${respnse.statusMessage}'));
-      }
-      final encoded =
-          respnse.data['routes'][0]['overview_polyline']['points'] as String;
-      final rawPoints = PolylinePoints().decodePolyline(encoded);
-      final points =
-          rawPoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
+      };
 
-      // 3) نحسب المسافة والمدة
-      final leg = respnse.data['routes'][0]['legs'][0];
-      final distanceKm = (leg['distance']['value'] as int) / 1000.0;
-      final durationSec = leg['duration']['value'] as int;
-      final duration = Duration(seconds: durationSec);
+      if (waypoints.isNotEmpty) {
+        final wpList =
+            waypoints.map((p) => '${p.latitude},${p.longitude}').toList();
+        params['waypoints'] = wpList.join('|');
+        debugPrint('waypoints: ${params['waypoints']}');
+      }
+      final response = await dioClient.get(
+        'http://192.168.1.60:5000/directions',
+        queryParameters: params,
+      );
+      if (response.statusCode != 200) {
+        return Left(ServerFailure('Failed: ${response.statusMessage}'));
+      }
+
+      // Decode polyline
+      final encoded =
+          response.data['routes'][0]['overview_polyline']['points'] as String;
+      final rawPoints = PolylinePoints().decodePolyline(encoded);
+      final coordinates =
+          rawPoints.map((pt) => LatLng(pt.latitude, pt.longitude)).toList();
+
+      // Sum legs
+      final legs = response.data['routes'][0]['legs'] as List<dynamic>;
+      final totalDistanceKm = legs.fold<double>(
+        0.0,
+        (sum, leg) => sum + (leg['distance']['value'] as int) / 1000.0,
+      );
+      final totalDurationSec = legs.fold<int>(
+        0,
+        (sum, leg) => sum + (leg['duration']['value'] as int),
+      );
+      final totalDuration = Duration(seconds: totalDurationSec);
 
       return Right(DirctionRouteModel(
-        coordinates: points,
-        distance: distanceKm,
-        duration: duration,
+        coordinates: coordinates,
+        distance: totalDistanceKm,
+        duration: totalDuration,
       ));
     } catch (e) {
       if (e is DioException) {
         return Left(ServerFailure.fromDioError(e));
-      } else {
-        return Left(ServerFailure(e.toString()));
       }
+      return Left(ServerFailure(e.toString()));
     }
   }
+  // Future<Either<Failure, DirctionRouteModel>> getDirections({
+  //   required LatLng origin,
+  //   required LatLng destination,
+  // }) async {
+  //   try {
+  //     final respnse = await dioClient
+  //         .get('http://192.168.1.60:1209/directions', queryParameters: {
+  //       'origin': '${origin.latitude},${origin.longitude}',
+  //       'destination': '${destination.latitude},${destination.longitude}',
+  //       'mode': 'driving',
+  //       'key': apiKey,
+  //     });
+  //     if (respnse.statusCode != 200) {
+  //       return Left(
+  //           ServerFailure('Failed to fetch route: ${respnse.statusMessage}'));
+  //     }
+  //     final encoded =
+  //         respnse.data['routes'][0]['overview_polyline']['points'] as String;
+  //     final rawPoints = PolylinePoints().decodePolyline(encoded);
+  //     final points =
+  //         rawPoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
+
+  //     // 3) نحسب المسافة والمدة
+  //     final leg = respnse.data['routes'][0]['legs'][0];
+  //     final distanceKm = (leg['distance']['value'] as int) / 1000.0;
+  //     final durationSec = leg['duration']['value'] as int;
+  //     final duration = Duration(seconds: durationSec);
+
+  //     return Right(DirctionRouteModel(
+  //       coordinates: points,
+  //       distance: distanceKm,
+  //       duration: duration,
+  //     ));
+  //   } catch (e) {
+  //     if (e is DioException) {
+  //       return Left(ServerFailure.fromDioError(e));
+  //     } else {
+  //       return Left(ServerFailure(e.toString()));
+  //     }
+  //   }
+  // }
 
   @override
   Future<Either<Failure, RoutesModel>> getRoutes(

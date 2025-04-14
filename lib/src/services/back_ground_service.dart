@@ -3,12 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mdsoft_google_map_routing/google_map_routing.dart';
 import 'package:mdsoft_google_map_routing/src/services/location_service.dart'
     as location_service;
 import 'package:mdsoft_google_map_routing/src/utils/socket_service.dart' as io;
-import 'package:mdsoft_google_map_routing/src/utils/constants.dart'
-    as constants;
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) {
@@ -38,7 +35,7 @@ void onStart(ServiceInstance service) {
   //! Listen for stop service request
   service.on('stopService').listen(
     (_) {
-      print('Service Stop');
+      debugPrint('Service Stop');
       updateTimer?.cancel();
       backgroundLocation.clearLocation();
       service.stopSelf();
@@ -113,7 +110,6 @@ class BackGroundService {
   final FlutterBackgroundService service = FlutterBackgroundService();
 
   Future<void> initializeService() async {
-   
     await service.configure(
       iosConfiguration: IosConfiguration(
         onForeground: onStart,

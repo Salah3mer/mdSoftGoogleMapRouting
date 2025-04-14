@@ -67,6 +67,10 @@ class MapScreen extends StatelessWidget {
       body: MdSoftGoogleMapRouting(
         isUser: false,
         mapStyle: 'assets/json/map_style.json',
+        waypoints: [
+          MdSoftLatLng(30.704706366785057, 31.267074854681997),
+          MdSoftLatLng(30.70392502951272, 31.264789095920797)
+        ],
         startLocation: MdSoftLatLng(30.7052, 31.2677),
         endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782),
         floatingActionButtonIcon:

@@ -21,12 +21,14 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
   final String? mapStyle;
   final MdSoftLatLng startLocation;
   final MdSoftLatLng endLocation;
+  final List<MdSoftLatLng> waypoints;
   final bool isUser;
   const MdSoftGoogleMapRouting(
       {super.key,
       this.floatingActionButtonIcon,
       this.mapStyle,
       this.isUser = false,
+      this.waypoints = const [],
       required this.endLocation,
       required this.startLocation});
 
@@ -74,6 +76,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
             body: Stack(
               children: [
                 GoogleMapWidget(
+                    waypoints: waypoints,
                     isUser: isUser,
                     cubit: cubit,
                     mapStyle: mapStyle,
@@ -113,6 +116,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
 class GoogleMapWidget extends StatefulWidget {
   const GoogleMapWidget({
     super.key,
+    required this.waypoints,
     required this.cubit,
     required this.mapStyle,
     required this.startLocation,
@@ -124,6 +128,7 @@ class GoogleMapWidget extends StatefulWidget {
   final String? mapStyle;
   final MdSoftLatLng startLocation;
   final MdSoftLatLng endLocation;
+  final List<MdSoftLatLng> waypoints;
 
   @override
   State<GoogleMapWidget> createState() => _GoogleMapWidgetState();
@@ -179,6 +184,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
           widget.cubit.getDirectionsRoute(
             origin: widget.startLocation.googleLatLng,
             destination: widget.endLocation.googleLatLng,
+            waypoints: widget.waypoints,
           );
         });
       },
