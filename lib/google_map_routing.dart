@@ -92,7 +92,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         side: BorderSide(color: Colors.transparent),
                       ),
-                      backgroundColor: Colors.white.withOpacity(.9),
+                      backgroundColor: Colors.white.withValues(alpha: .9),
                       onPressed: () async {
                         BackGroundService().initializeService();
                         FlutterBackgroundService().invoke('setAsForeground');
@@ -138,8 +138,6 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
 
     if (widget.isUser) {
       _initLocationForUser();
-    } else {
-      _initLocationForDriver();
     }
   }
 
@@ -150,12 +148,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
     super.dispose();
   }
 
-  void _initLocationForDriver() async {
-    await widget.cubit.getLocationMyCurrentLocation();
-  }
-
   void _initLocationForUser() async {
-    await widget.cubit.getLocationMyCurrentLocation();
     widget.cubit.initializeDataAndSocket();
   }
 
@@ -179,13 +172,15 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
       compassEnabled: false,
       initialCameraPosition: widget.cubit.cameraPosition,
       myLocationEnabled: false,
-      onMapCreated: (GoogleMapController controller) {
+      onMapCreated: (GoogleMapController controller) async {
         widget.cubit.googleMapController = controller;
         widget.cubit.getMapStyle(mapStyle: widget.mapStyle!);
-        widget.cubit.getDirectionsRoute(
-          origin: widget.startLocation.googleLatLng,
-          destination: widget.endLocation.googleLatLng,
-        );
+        await widget.cubit.getLocationMyCurrentLocation().then((_) {
+          widget.cubit.getDirectionsRoute(
+            origin: widget.startLocation.googleLatLng,
+            destination: widget.endLocation.googleLatLng,
+          );
+        });
       },
     );
   }
