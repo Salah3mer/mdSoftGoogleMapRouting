@@ -65,14 +65,15 @@ class MapScreen extends StatelessWidget {
         ],
       ),
       body: MdSoftGoogleMapRouting(
-        isUser: false,
+        isUser: true,
         mapStyle: 'assets/json/map_style.json',
         waypoints: [
           MdSoftLatLng(30.704706366785057, 31.267074854681997),
           MdSoftLatLng(30.70392502951272, 31.264789095920797)
         ],
+        pointsName: const ['point1', 'point2', 'point3', 'point4'],
         startLocation: MdSoftLatLng(30.7052, 31.2677),
-        endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782),
+        endLocation: MdSoftLatLng(30.706962805337074, 31.264019357862757),
         floatingActionButtonIcon:
             const Icon(Icons.my_location, color: Colors.black),
       ),

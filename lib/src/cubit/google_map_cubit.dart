@@ -351,11 +351,11 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
       ),
     );
     if (waypoints.isNotEmpty) {
-      for (var i = 2; i < waypoints.length; i++) {
+      for (var i = 0; i < waypoints.length; i++) {
         markers.add(Marker(
-          markerId: MarkerId('waypoint ${i + 1}'),
+          markerId: MarkerId('waypoint $i '),
           position: waypoints[i],
-          infoWindow: InfoWindow(title: pointsName[i]),
+          infoWindow: InfoWindow(title: pointsName[i + 2]),
           icon: await AppImages.point.toBitmapDescriptor(devicePixelRatio: 2.5),
         ));
       }
