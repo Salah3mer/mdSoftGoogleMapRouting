@@ -2,7 +2,7 @@ name: mdsoft_google_map_routing
 description: "A powerful Flutter package for real-time navigation and route
   tracking using Google Maps API. This package supports background location
   updates, route calculation, and customizable map styles."
-version: 0.0.1
+version: 0.0.2
 homepage: 'https://github.com/Salah3mer/mdSoftGoogleMapRouting.git'
 
 environment:
