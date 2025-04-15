@@ -12,6 +12,8 @@ A powerful Flutter package for real-time navigation and route tracking using Goo
 - **Customizable map styles**: Apply custom map themes (e.g., dark mode, light mode).
 - **Destination reached notification**: Notify the user when they reach their destination.
 - **Smooth animations**: Animated camera movements and marker transitions.
+- **Waypoints support**: Define multiple stop points along the route for more complex navigation flows.
+- **Points naming**: Introduced `pointsName` parameter to easily label and identify each location.
 
 ---
 
