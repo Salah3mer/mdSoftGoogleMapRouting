@@ -147,11 +147,12 @@ plugins {
 
 ```dart
   MdSoftGoogleMapRouting(
+  isUser : false,  // true or false if  it user or admin  make it true  if  it driver make it false the default is false
   mapStyle: 'assets/json/map_style.json', // Path to your custom map style JSON file.
   startLocation: MdSoftLatLng(30.7052, 31.2677), // Define the start location.
-  endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782),
-   // Define the destination.
-  waypoints : [MdSoftLatLng(30.7052, 31.2677),MdSoftLatLng(30.7052, 31.2677)]   // Define waypoints as List of MdSoftLatLng objects.
+  endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782), // Define the destination.
+  waypoints : [MdSoftLatLng(30.7052, 31.2677),MdSoftLatLng(30.7052, 31.2677)]  , //Define waypoints as List of MdSoftLatLng objects.
+  pontsName:['startPointName', 'endPointName' ...[list of waypoints name]], // you must send  'startPointName', 'endPointName' ,  Define waypoints name as List of String.
   floatingActionButtonIcon:
       const Icon(Icons.my_location, color: Colors.black), // Custom FAB icon.
 ),
