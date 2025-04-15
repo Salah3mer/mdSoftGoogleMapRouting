@@ -203,6 +203,7 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
     required LatLng origin,
     required LatLng destination,
     required List<MdSoftLatLng> waypoints,
+    required List<String> pointsName,
   }) async {
     final latlonWaypoints =
         waypoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
@@ -219,6 +220,7 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         await setMarkers(
             startLocation: origin,
             destination: destination,
+            pointsName: pointsName,
             waypoints: latlonWaypoints);
         await getBounds(routeModel!.coordinates);
         updateRoute(origin);
@@ -329,13 +331,13 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
       {required LatLng startLocation,
       required LatLng destination,
       required List<LatLng> waypoints,
+      required List<String> pointsName,
       bool isUser = false}) async {
-    print(waypoints);
     markers.add(
       Marker(
-        markerId: const MarkerId('currentLocation'),
+        markerId: const MarkerId('startLocation'),
         position: startLocation,
-        infoWindow: const InfoWindow(title: 'Current Location'),
+        infoWindow: InfoWindow(title: pointsName[0]),
         icon: await AppImages.from.toBitmapDescriptor(devicePixelRatio: 2.5),
       ),
     );
@@ -344,19 +346,17 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
       Marker(
         markerId: const MarkerId('destination'),
         position: destination,
-        infoWindow: const InfoWindow(title: 'Destination'),
+        infoWindow: InfoWindow(title: pointsName[1]),
         icon: await AppImages.goTo.toBitmapDescriptor(devicePixelRatio: 2.5),
       ),
     );
     if (waypoints.isNotEmpty) {
-      for (var i = 0; i < waypoints.length; i++) {
+      for (var i = 2; i < waypoints.length; i++) {
         markers.add(Marker(
           markerId: MarkerId('waypoint ${i + 1}'),
           position: waypoints[i],
-
-          infoWindow: InfoWindow(title: 'waypoint ${i + 1}'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          // icon: await AppImages.goTo.toBitmapDescriptor(devicePixelRatio: 2.5),
+          infoWindow: InfoWindow(title: pointsName[i]),
+          icon: await AppImages.point.toBitmapDescriptor(devicePixelRatio: 2.5),
         ));
       }
     }

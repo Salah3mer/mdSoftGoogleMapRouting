@@ -22,6 +22,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
   final MdSoftLatLng startLocation;
   final MdSoftLatLng endLocation;
   final List<MdSoftLatLng> waypoints;
+  final List<String> pointsName;
   final bool isUser;
   const MdSoftGoogleMapRouting(
       {super.key,
@@ -29,6 +30,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
       this.mapStyle,
       this.isUser = false,
       this.waypoints = const [],
+      this.pointsName = const [],
       required this.endLocation,
       required this.startLocation});
 
@@ -76,6 +78,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
             body: Stack(
               children: [
                 GoogleMapWidget(
+                    pointsName: pointsName,
                     waypoints: waypoints,
                     isUser: isUser,
                     cubit: cubit,
@@ -95,7 +98,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         side: BorderSide(color: Colors.transparent),
                       ),
-                      backgroundColor: Colors.white.withOpacity( .9),
+                      backgroundColor: Colors.white.withOpacity(.9),
                       onPressed: () async {
                         BackGroundService().initializeService();
                         FlutterBackgroundService().invoke('setAsForeground');
@@ -116,6 +119,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
 class GoogleMapWidget extends StatefulWidget {
   const GoogleMapWidget({
     super.key,
+    required this.pointsName,
     required this.waypoints,
     required this.cubit,
     required this.mapStyle,
@@ -124,6 +128,7 @@ class GoogleMapWidget extends StatefulWidget {
     required this.isUser,
   });
   final bool isUser;
+  final List<String> pointsName;
   final GoogleMapCubit cubit;
   final String? mapStyle;
   final MdSoftLatLng startLocation;
@@ -140,7 +145,6 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
     if (widget.isUser) {
       _initLocationForUser();
     }
@@ -149,7 +153,6 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-
     super.dispose();
   }
 
@@ -185,6 +188,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
             origin: widget.startLocation.googleLatLng,
             destination: widget.endLocation.googleLatLng,
             waypoints: widget.waypoints,
+            pointsName: widget.pointsName,
           );
         });
       },
