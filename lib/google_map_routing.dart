@@ -34,6 +34,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
       required this.endLocation,
       required this.startLocation});
 
+  /// test
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -52,6 +53,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
             context: context,
           );
         }
+
         if (state is GetDirectionsErrorState) {
           showToastificationWidget(
             message: state.errorMessage,

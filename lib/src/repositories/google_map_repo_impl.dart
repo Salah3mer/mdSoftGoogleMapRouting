@@ -38,10 +38,19 @@ class GoogleMapRepoImpl extends GoogleMapRepo {
         params['waypoints'] = wpList.join('|');
         debugPrint('waypoints: ${params['waypoints']}');
       }
-      final response = await dioClient.get(
-        'http://192.168.1.60:5000/directions',
-        queryParameters: params,
-      );
+      final dynamic response;
+      if (kIsWeb) {
+        response = await dioClient.get(
+          'http://192.168.1.59:5000/directions',
+          queryParameters: params,
+        );
+      } else {
+        response = await dioClient.get(
+          'https://maps.googleapis.com/maps/api/directions/json',
+          queryParameters: params,
+        );
+      }
+
       if (response.statusCode != 200) {
         return Left(ServerFailure('Failed: ${response.statusMessage}'));
       }
