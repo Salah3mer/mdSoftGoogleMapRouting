@@ -74,8 +74,8 @@ class MapScreen extends StatelessWidget {
         pointsName: const ['point1', 'point2', 'point3', 'point4'],
         startLocation: MdSoftLatLng(30.7052, 31.2677),
         endLocation: MdSoftLatLng(30.706962805337074, 31.264019357862757),
-        floatingActionButtonIcon:
-            const Icon(Icons.my_location, color: Colors.black),
+        carPosstion: MdSoftLatLng(30.706962805337074, 31.264019357862757),
+    
       ),
     );
   }

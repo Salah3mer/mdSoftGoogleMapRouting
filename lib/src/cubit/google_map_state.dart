@@ -52,7 +52,7 @@ class SetMarkersSuccessState extends GoogleMapState {}
 
 class GetBoundsSuccessState extends GoogleMapState {}
 
-class UpdateRouteSuccessState extends GoogleMapState {} 
+class UpdateRouteSuccessState extends GoogleMapState {}
 
 class GetRoutesLoadingState extends GoogleMapState {}
 
@@ -63,5 +63,9 @@ class GetRoutesFailureState extends GoogleMapState {
 
   GetRoutesFailureState({required this.failure});
 }
-class DestinationReachedState extends GoogleMapState {}
 
+class DestinationReachedState extends GoogleMapState {
+  final int isecRoute;
+
+  DestinationReachedState({required this.isecRoute});
+}

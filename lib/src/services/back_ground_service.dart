@@ -16,7 +16,7 @@ void onStart(ServiceInstance service) {
   Timer? updateTimer;
   final backgroundLocation = BackgroundServiceLocation();
   final socketService = io.SocketService();
-  socketService.initializeSocket(socketBaseUrl: 'http://192.168.1.24:3000/');
+  socketService.initializeSocket(socketBaseUrl: 'http://192.168.1.23:3000');
 
   //* Set service states on Android (foreground / background)
   if (service is AndroidServiceInstance) {

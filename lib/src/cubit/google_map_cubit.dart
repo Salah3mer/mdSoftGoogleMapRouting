@@ -44,6 +44,21 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   Set<Polyline> polyLines = {};
   late LatLng currentLocation;
   LatLng? carLocation;
+  LatLng? destination; // Changed from late to nullable
+  StreamSubscription<LocationData>? _positionStream;
+
+  // Helper method to safely emit states
+  void safeEmit(GoogleMapState state) {
+    if (!isClosed) {
+      emit(state);
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await _positionStream?.cancel();
+    return super.close();
+  }
 
 //? getLocation
   Future<void> getLocationMyCurrentLocation() async {
@@ -73,10 +88,20 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   double oldTilt = 0.0;
   DateTime lastUpdate = DateTime.now();
   bool _hasEmittedDestinationReached = false;
-  Future<void> getMyStreemLocation() async {
+  int isSecondRoute = 0;
+
+  Future<void> getMyStreemLocation({bool isSec = false}) async {
     try {
+      isSecondRoute++;
+      if (destination == null) {
+        debugPrint("Warning: Destination is null in getMyStreemLocation()");
+      }
+
+      await _positionStream?.cancel();
+
       _hasEmittedDestinationReached = false;
-      locationService.getRealTimeLocationData(
+
+      _positionStream = await locationService.getLocationStream(
         (locationData) {
           if (locationData.latitude == null || locationData.longitude == null) {
             return;
@@ -98,12 +123,17 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
           final double smoothtilt =
               CamiraService.smoothTilt(oldTilt, tilt, 0.2);
           if (_hasEmittedDestinationReached) return;
-          if (locationService.isAtDestination(newLocation, destination)) {
-            _hasEmittedDestinationReached = true;
-            FlutterBackgroundService().invoke('stopService');
-            locationService.stopTracking();
-            emit(DestinationReachedState());
+          if (destination != null &&
+              locationService.isAtDestination(newLocation, destination!)) {
+            if (isSec) {
+              _hasEmittedDestinationReached = isSec;
+              FlutterBackgroundService().invoke('stopService');
+              locationService.stopTracking();
+            }
 
+            safeEmit(DestinationReachedState(
+              isecRoute: isSecondRoute,
+            ));
             return;
           }
 
@@ -131,10 +161,10 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
             {
               'lat': newLocation.latitude,
               'lng': newLocation.longitude,
-              'destLat': destination.latitude,
+              'destLat': destination?.latitude,
             },
           );
-          emit(GetMyStreemLocationSuccessState());
+          safeEmit(GetMyStreemLocationSuccessState());
         },
       );
     } on LocationServiceException catch (_) {
@@ -148,8 +178,9 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
 
   late SocketService socketService = SocketService();
 
-  Future<void> initializeDataAndSocket() async {
+  Future<void> initializeDataAndSocket({bool isSec = false}) async {
     try {
+      _hasEmittedDestinationReached = false;
       socketService.initializeSocket();
       socketService.onMessage('location', (locationData) async {
         if (locationData != null) {}
@@ -160,6 +191,20 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         LatLng newLocation =
             LatLng(locationData['latitude']!, locationData['longitude']!);
         debugPrint('newLocation: $newLocation');
+
+        if (_hasEmittedDestinationReached) return;
+        if (destination != null &&
+            locationService.isAtDestination(newLocation, destination!,
+                toleranceMeters: 15)) {
+          if (isSec) {
+            _hasEmittedDestinationReached = isSec;
+          }
+
+          safeEmit(DestinationReachedState(
+            isecRoute: isSecondRoute,
+          ));
+          return;
+        }
         updateRoute(newLocation);
         carLocation = newLocation;
         updateCarMarker(isUser: true);
@@ -175,6 +220,7 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
           ),
         );
         lastUpdate = DateTime.now();
+        safeEmit(GetMyStreemLocationSuccessState());
       });
     } catch (e) {
       debugPrint('Error initializing data and socket: $e');
@@ -194,17 +240,20 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
 
   //? getDirections
   DirctionRouteModel? routeModel;
-  late LatLng destination;
+  // destination is already defined above as LatLng?
   Future<void> getDirectionsRoute({
     required LatLng origin,
-    required LatLng destination,
+    required LatLng destinationLocation,
     required List<MdSoftLatLng> waypoints,
     required List<String> pointsName,
+    bool isFromDriverToUser = false,
   }) async {
     final latlonWaypoints =
         waypoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
     final result = await googleMapRepoImpl.getDirections(
-        origin: origin, destination: destination, waypoints: latlonWaypoints);
+        origin: origin,
+        destination: destinationLocation,
+        waypoints: latlonWaypoints);
     result.fold(
       (l) {
         debugPrint(l.message.toString());
@@ -212,12 +261,14 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
       },
       (r) async {
         routeModel = r;
-        this.destination = destination;
+        destination = destinationLocation;
         await setMarkers(
-            startLocation: origin,
-            destination: destination,
-            pointsName: pointsName,
-            waypoints: latlonWaypoints);
+          startLocation: origin,
+          destination: destinationLocation,
+          pointsName: pointsName,
+          waypoints: latlonWaypoints,
+          isFromDriverToUser: isFromDriverToUser,
+        );
         await getBounds(routeModel!.coordinates);
         updateRoute(origin);
         emit(GetDirectionsSuccessState());
@@ -229,6 +280,13 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
 
   Future<void> getRoutes() async {
     emit(GetRoutesLoadingState());
+
+    // Return early if destination is null
+    if (destination == null) {
+      emit(GetRoutesFailureState(failure: "Destination not set"));
+      return;
+    }
+
     Either<Failure, RoutesModel> result = await googleMapRepoImpl.getRoutes(
       routeBodyModel: RouteBodyModel(
         origin: Origin(
@@ -242,8 +300,8 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         destination: Destination(
           location: LocationModel(
             latLng: LatLngModel(
-              latitude: destination.latitude,
-              longitude: destination.longitude,
+              latitude: destination!.latitude,
+              longitude: destination!.longitude,
             ),
           ),
         ),
@@ -271,7 +329,9 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   //? updateRoute
   LineService lineService = LineService();
   void updateRoute(LatLng currentPosition) {
-    if (routeModel == null || routeModel!.coordinates.isEmpty) return;
+    // Check for null models or closed cubit
+    if (routeModel == null || routeModel!.coordinates.isEmpty || isClosed)
+      return;
     final fullRoute = routeModel!.coordinates;
     // 1. إيجاد أقرب قطعة
     final closestIndex =
@@ -319,40 +379,65 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         polylineId: const PolylineId('remainingRoute'),
       ),
     );
-    emit(UpdateRouteSuccessState());
+    safeEmit(UpdateRouteSuccessState());
   }
 
   ///? setMarkers
   Future<void> setMarkers(
-      {required LatLng startLocation,
+      {bool isFromDriverToUser = false,
+      required LatLng startLocation,
       required LatLng destination,
       required List<LatLng> waypoints,
       required List<String> pointsName,
       bool isUser = false}) async {
-    markers.add(
-      Marker(
-        markerId: const MarkerId('startLocation'),
-        position: startLocation,
-        infoWindow: InfoWindow(title: pointsName[0]),
-        icon: await AppImages.from.toBitmapDescriptor(devicePixelRatio: 2.5),
-      ),
-    );
+    if (!isFromDriverToUser) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('startLocation'),
+          position: startLocation,
+          infoWindow: InfoWindow(title: pointsName[0]),
+          icon: await AppImages.from.toBitmapDescriptor(devicePixelRatio: 2.5),
+        ),
+      );
 
-    markers.add(
-      Marker(
-        markerId: const MarkerId('destination'),
-        position: destination,
-        infoWindow: InfoWindow(title: pointsName[1]),
-        icon: await AppImages.goTo.toBitmapDescriptor(devicePixelRatio: 2.5),
-      ),
-    );
+      markers.add(
+        Marker(
+          markerId: const MarkerId('destination'),
+          position: destination,
+          infoWindow: InfoWindow(title: pointsName[1]),
+          icon: await AppImages.goTo.toBitmapDescriptor(devicePixelRatio: 2.5),
+        ),
+      );
+    } else {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('destination'),
+          position: destination,
+          infoWindow: InfoWindow(title: pointsName[1]),
+          icon: await AppImages.currentLocation
+              .toBitmapDescriptor(devicePixelRatio: 2.5),
+        ),
+      );
+      markers.add(
+        Marker(
+          markerId: const MarkerId('userStartLocation'),
+          position: LatLng(
+            destination.latitude + (0.000072), // ~8 meters north
+            destination.longitude + (0.000072), // ~8 meters east
+          ),
+          infoWindow: InfoWindow(title: pointsName[1]),
+          icon: await AppImages.point.toBitmapDescriptor(devicePixelRatio: 2.5),
+        ),
+      );
+    }
     if (waypoints.isNotEmpty) {
       for (var i = 0; i < waypoints.length; i++) {
         markers.add(Marker(
           markerId: MarkerId('waypoint $i '),
           position: waypoints[i],
           infoWindow: InfoWindow(title: pointsName[i + 2]),
-          icon: await AppImages.point.toBitmapDescriptor(devicePixelRatio: 2.5),
+          icon: await AppImages.selectedEnd
+              .toBitmapDescriptor(devicePixelRatio: 2.5),
         ));
       }
     }
@@ -364,7 +449,13 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         markerId: const MarkerId('car'),
         position: isUser ? carLocation ?? const LatLng(0, 0) : currentLocation,
         icon: await AppImages.car.toBitmapDescriptor(devicePixelRatio: 2.5),
-        rotation: 0, // أول مرة بدون دوران
+        rotation: CamiraService.smoothBearing(
+          oldBearing,
+          carLocation != null
+              ? CamiraService.getBearing(currentLocation, carLocation!)
+              : 0,
+          0.1,
+        ),
       ),
     );
 
@@ -378,6 +469,13 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
       Marker(
         markerId: const MarkerId('car'),
         position: isUser ? carLocation ?? const LatLng(0, 0) : currentLocation,
+        rotation: CamiraService.smoothBearing(
+          oldBearing,
+          carLocation != null
+              ? CamiraService.getBearing(currentLocation, carLocation!)
+              : 0,
+          0.1,
+        ),
         icon: await AppImages.car.toBitmapDescriptor(devicePixelRatio: 2.5),
       ),
     );

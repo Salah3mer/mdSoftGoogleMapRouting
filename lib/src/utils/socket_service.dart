@@ -15,6 +15,8 @@ class SocketService {
       <String, dynamic>{
         'transports': ['websocket'],
         'autoConnect': true,
+        'reconnect': true,
+        'reconnectDelay': 1000,
       },
     );
 

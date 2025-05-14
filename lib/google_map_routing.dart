@@ -17,22 +17,24 @@ export 'src/utils/app_images.dart';
 export 'src/models/md_soft_lat_lng.dart';
 
 class MdSoftGoogleMapRouting extends StatelessWidget {
-  final Widget? floatingActionButtonIcon;
   final String? mapStyle;
   final MdSoftLatLng startLocation;
   final MdSoftLatLng endLocation;
   final List<MdSoftLatLng> waypoints;
   final List<String> pointsName;
   final bool isUser;
-  const MdSoftGoogleMapRouting(
-      {super.key,
-      this.floatingActionButtonIcon,
-      this.mapStyle,
-      this.isUser = false,
-      this.waypoints = const [],
-      this.pointsName = const [],
-      required this.endLocation,
-      required this.startLocation});
+  final MdSoftLatLng carPosstion;
+
+  const MdSoftGoogleMapRouting({
+    super.key,
+    this.mapStyle,
+    this.isUser = false,
+    this.waypoints = const [],
+    this.pointsName = const [],
+    required this.endLocation,
+    required this.startLocation,
+    required this.carPosstion,
+  });
 
   /// test
   @override
@@ -40,46 +42,59 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
     return BlocProvider(
       create: (context) => GoogleMapCubit(),
       child: BlocConsumer<GoogleMapCubit, GoogleMapState>(
-          listener: (context, state) {
-        if (state is GetLocationErrorState) {
-          showToastificationWidget(
-            message: state.errorMessage,
-            context: context,
-          );
-        }
-        if (state is GetPlaceDetailsErrorState) {
-          showToastificationWidget(
-            message: state.errorMessage,
-            context: context,
-          );
-        }
+        listener: (context, state) {
+          if (state is GetLocationErrorState) {
+            showToastificationWidget(
+              message: state.errorMessage,
+              context: context,
+            );
+          }
+          if (state is GetPlaceDetailsErrorState) {
+            showToastificationWidget(
+              message: state.errorMessage,
+              context: context,
+            );
+          }
 
-        if (state is GetDirectionsErrorState) {
-          showToastificationWidget(
-            message: state.errorMessage,
-            context: context,
-          );
-        }
-        if (state is GetRoutesFailureState) {
-          showToastificationWidget(
-            message: state.failure,
-            context: context,
-          );
-        }
-        if (state is DestinationReachedState) {
-          showToastificationWidget(
-            message: 'تم الوصول الي وجهتك',
-            context: context,
-            notificationType: ToastificationType.success,
-          );
-        }
-      }, builder: (context, state) {
-        var cubit = context.read<GoogleMapCubit>();
-        return Scaffold(
+          if (state is GetDirectionsErrorState) {
+            showToastificationWidget(
+              message: state.errorMessage,
+              context: context,
+            );
+          }
+          if (state is GetRoutesFailureState) {
+            showToastificationWidget(
+              message: state.failure,
+              context: context,
+            );
+          }
+          if (state is DestinationReachedState) {
+            showToastificationWidget(
+              message: 'تم الوصول الي وجهتك',
+              context: context,
+              notificationType: ToastificationType.success,
+            );
+            if (state.isecRoute <= 1) {
+              var cubit = context.read<GoogleMapCubit>();
+              cubit.polyLines.clear();
+              cubit.markers.clear();
+              cubit.getDirectionsRoute(
+                origin: startLocation.googleLatLng,
+                destinationLocation: endLocation.googleLatLng,
+                waypoints: waypoints,
+                pointsName: pointsName,
+              );
+            }
+          }
+        },
+        builder: (context, state) {
+          var cubit = context.read<GoogleMapCubit>();
+          return Scaffold(
             resizeToAvoidBottomInset: false,
             body: Stack(
               children: [
                 GoogleMapWidget(
+                    carPosition: carPosstion,
                     pointsName: pointsName,
                     waypoints: waypoints,
                     isUser: isUser,
@@ -87,33 +102,11 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
                     mapStyle: mapStyle,
                     startLocation: startLocation,
                     endLocation: endLocation),
-                isUser ? const SizedBox.shrink() : const IconBack(),
               ],
             ),
-            floatingActionButton: isUser
-                ? const SizedBox.shrink()
-                : SizedBox(
-                    height: 46,
-                    width: 46,
-                    child: FloatingActionButton(
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                        side: BorderSide(color: Colors.transparent),
-                      ),
-                      backgroundColor: Colors.white.withOpacity(.9),
-                      onPressed: () async {
-                        BackGroundService().initializeService();
-                        FlutterBackgroundService().invoke('setAsForeground');
-                        cubit.getMyStreemLocation();
-                      },
-                      child: floatingActionButtonIcon ??
-                          Icon(
-                            Icons.my_location,
-                            color: GoogleMapConfig.primaryColor,
-                          ),
-                    ),
-                  ));
-      }),
+          );
+        },
+      ),
     );
   }
 }
@@ -128,13 +121,16 @@ class GoogleMapWidget extends StatefulWidget {
     required this.startLocation,
     required this.endLocation,
     required this.isUser,
+    required this.carPosition,
   });
+
   final bool isUser;
   final List<String> pointsName;
   final GoogleMapCubit cubit;
   final String? mapStyle;
   final MdSoftLatLng startLocation;
   final MdSoftLatLng endLocation;
+  final MdSoftLatLng carPosition;
   final List<MdSoftLatLng> waypoints;
 
   @override
@@ -147,19 +143,31 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (widget.isUser) {
-      _initLocationForUser();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isUser) {
+        _initLocationForUser();
+      } else {
+        BackGroundService().initializeService().then((_) {
+          FlutterBackgroundService().invoke('setAsForeground');
+          Future.delayed(const Duration(seconds: 1), () {
+            widget.cubit.getMyStreemLocation();
+          });
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    if (widget.isUser) {
+      _stopTracking();
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   void _initLocationForUser() async {
-    widget.cubit.initializeDataAndSocket();
+    await widget.cubit.initializeDataAndSocket();
   }
 
   @override
@@ -187,10 +195,16 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
         widget.cubit.getMapStyle(mapStyle: widget.mapStyle!);
         await widget.cubit.getLocationMyCurrentLocation().then((_) {
           widget.cubit.getDirectionsRoute(
-            origin: widget.startLocation.googleLatLng,
-            destination: widget.endLocation.googleLatLng,
-            waypoints: widget.waypoints,
-            pointsName: widget.pointsName,
+            origin: widget.isUser
+                ? widget.carPosition.googleLatLng
+                : widget.cubit.currentLocation,
+            isFromDriverToUser: true,
+            destinationLocation: widget.startLocation.googleLatLng,
+            waypoints: [],
+            pointsName: [
+              'Current Location For the Driver',
+              widget.pointsName[0],
+            ],
           );
         });
       },

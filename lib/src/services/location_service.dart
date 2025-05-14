@@ -89,6 +89,24 @@ class LocationService {
     );
   }
 
+  Future<StreamSubscription<LocationData>?> getLocationStream(
+      void Function(LocationData)? onData) async {
+    try {
+      await checkAndRequestLocationService();
+      await checkAndRequestLocationPermission();
+      final subscription = location.onLocationChanged.listen(onData);
+      await location.changeSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 2.0,
+        interval: 1000,
+      );
+      return subscription;
+    } on PlatformException catch (e) {
+      debugPrint("Get location stream failed: ${e.message}");
+      rethrow;
+    }
+  }
+
   static const double _earthRadiusKm = 6371.0;
   static const double _metersInKm = 1000.0;
   static const double _milesInKm = 0.621371;
@@ -136,7 +154,7 @@ class LocationService {
   }
 
   bool isAtDestination(LatLng current, LatLng destination,
-      {double toleranceMeters = 5.0}) {
+      {double toleranceMeters = 8.0}) {
     final distance = distanceBetween(
       current.latitude,
       current.longitude,

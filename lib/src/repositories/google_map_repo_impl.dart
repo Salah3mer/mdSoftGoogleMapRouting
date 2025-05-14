@@ -86,47 +86,6 @@ class GoogleMapRepoImpl extends GoogleMapRepo {
       return Left(ServerFailure(e.toString()));
     }
   }
-  // Future<Either<Failure, DirctionRouteModel>> getDirections({
-  //   required LatLng origin,
-  //   required LatLng destination,
-  // }) async {
-  //   try {
-  //     final respnse = await dioClient
-  //         .get('http://192.168.1.60:1209/directions', queryParameters: {
-  //       'origin': '${origin.latitude},${origin.longitude}',
-  //       'destination': '${destination.latitude},${destination.longitude}',
-  //       'mode': 'driving',
-  //       'key': apiKey,
-  //     });
-  //     if (respnse.statusCode != 200) {
-  //       return Left(
-  //           ServerFailure('Failed to fetch route: ${respnse.statusMessage}'));
-  //     }
-  //     final encoded =
-  //         respnse.data['routes'][0]['overview_polyline']['points'] as String;
-  //     final rawPoints = PolylinePoints().decodePolyline(encoded);
-  //     final points =
-  //         rawPoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
-
-  //     // 3) نحسب المسافة والمدة
-  //     final leg = respnse.data['routes'][0]['legs'][0];
-  //     final distanceKm = (leg['distance']['value'] as int) / 1000.0;
-  //     final durationSec = leg['duration']['value'] as int;
-  //     final duration = Duration(seconds: durationSec);
-
-  //     return Right(DirctionRouteModel(
-  //       coordinates: points,
-  //       distance: distanceKm,
-  //       duration: duration,
-  //     ));
-  //   } catch (e) {
-  //     if (e is DioException) {
-  //       return Left(ServerFailure.fromDioError(e));
-  //     } else {
-  //       return Left(ServerFailure(e.toString()));
-  //     }
-  //   }
-  // }
 
   @override
   Future<Either<Failure, RoutesModel>> getRoutes(
