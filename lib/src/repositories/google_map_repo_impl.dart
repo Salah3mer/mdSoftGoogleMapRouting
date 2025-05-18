@@ -41,7 +41,7 @@ class GoogleMapRepoImpl extends GoogleMapRepo {
       final dynamic response;
       if (kIsWeb) {
         response = await dioClient.get(
-          'http://192.168.1.59:5000/directions',
+          'http://209.250.237.58:1210/directions',
           queryParameters: params,
         );
       } else {
