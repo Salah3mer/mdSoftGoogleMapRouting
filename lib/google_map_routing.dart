@@ -8,6 +8,7 @@ import 'package:mdsoft_google_map_routing/src/services/location_service.dart';
 import 'package:mdsoft_google_map_routing/src/services/toastification_widget.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mdsoft_google_map_routing/src/utils/constants.dart';
+import 'package:mdsoft_google_map_routing/src/utils/socket_service.dart';
 import 'package:toastification/toastification.dart';
 export 'src/cubit/google_map_cubit.dart';
 export 'src/repositories/google_map_repo_impl.dart';
@@ -24,6 +25,8 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
   final List<String> pointsName;
   final bool isUser;
   final MdSoftLatLng carPosstion;
+  final String? tripId;
+  final String? driverId;
 
   const MdSoftGoogleMapRouting({
     super.key,
@@ -34,6 +37,8 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
     required this.endLocation,
     required this.startLocation,
     required this.carPosstion,
+    this.tripId,
+    this.driverId,
   });
 
   /// test
@@ -94,6 +99,8 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
             body: Stack(
               children: [
                 GoogleMapWidget(
+                    tripId: tripId,
+                    driverId: driverId,
                     carPosition: carPosstion,
                     pointsName: pointsName,
                     waypoints: waypoints,
@@ -122,6 +129,8 @@ class GoogleMapWidget extends StatefulWidget {
     required this.endLocation,
     required this.isUser,
     required this.carPosition,
+    this.tripId,
+    this.driverId,
   });
 
   final bool isUser;
@@ -132,6 +141,8 @@ class GoogleMapWidget extends StatefulWidget {
   final MdSoftLatLng endLocation;
   final MdSoftLatLng carPosition;
   final List<MdSoftLatLng> waypoints;
+  final String? tripId;
+  final String? driverId;
 
   @override
   State<GoogleMapWidget> createState() => _GoogleMapWidgetState();
@@ -144,13 +155,16 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      SocketService socketService = SocketService()..initializeSocket();
+      socketService.sendMessage('joinTripRoom', widget.tripId);
       if (widget.isUser) {
         _initLocationForUser();
       } else {
         BackGroundService().initializeService().then((_) {
           FlutterBackgroundService().invoke('setAsForeground');
           Future.delayed(const Duration(seconds: 1), () {
-            widget.cubit.getMyStreemLocation();
+            widget.cubit.getMyStreemLocation(
+                tripId: widget.tripId, driverId: widget.driverId);
           });
         });
       }
@@ -159,7 +173,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
 
   @override
   void dispose() {
-    if (widget.isUser) {
+    if (!widget.isUser) {
       _stopTracking();
     }
     WidgetsBinding.instance.removeObserver(this);

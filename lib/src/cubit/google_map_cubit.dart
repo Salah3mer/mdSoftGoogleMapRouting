@@ -90,7 +90,8 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   bool _hasEmittedDestinationReached = false;
   int isSecondRoute = 0;
 
-  Future<void> getMyStreemLocation({bool isSec = false}) async {
+  Future<void> getMyStreemLocation(
+      {bool isSec = false, String? tripId, String? driverId}) async {
     try {
       isSecondRoute++;
       if (destination == null) {
@@ -162,6 +163,8 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
               'lat': newLocation.latitude,
               'lng': newLocation.longitude,
               'destLat': destination?.latitude,
+              'tripId': tripId,
+              'driverId': driverId,
             },
           );
           safeEmit(GetMyStreemLocationSuccessState());
@@ -182,7 +185,7 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
     try {
       _hasEmittedDestinationReached = false;
       socketService.initializeSocket();
-      socketService.onMessage('location', (locationData) async {
+      socketService.onMessage('locationUpdate', (locationData) async {
         if (locationData != null) {}
         if (locationData['latitude'] == null ||
             locationData['longitude'] == null) {
@@ -474,7 +477,7 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
           carLocation != null
               ? CamiraService.getBearing(currentLocation, carLocation!)
               : 0,
-          0.1,
+          isUser ? .2 : 2,
         ),
         icon: await AppImages.car.toBitmapDescriptor(devicePixelRatio: 2.5),
       ),
