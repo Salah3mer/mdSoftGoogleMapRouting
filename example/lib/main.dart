@@ -23,7 +23,8 @@ void main() async {
   }
 
   GoogleMapConfig.initialize(
-      apiKey: 'API-KEY', socketBaseUrl: 'http://192.168.1.24:3000/');
+      apiKey: 'API_KEY',
+      socketBaseUrl: 'http://192.168.1.24:3000/');
   runApp(const MyApp());
 }
 

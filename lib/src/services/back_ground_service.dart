@@ -66,11 +66,9 @@ void onStart(ServiceInstance service) {
             title: 'دليل الرحلة الذكي',
             content: 'يتم تحديث موقعك لحظياً لضمان رحلة آمنة',
           );
-
           debugPrint('ForegroundService is running at \\${DateTime.now()}');
           debugPrint(
               'Current location : \\${backgroundLocation.currentLocation?.latitude}, \\${backgroundLocation.currentLocation?.longitude} , tripId : \\${backgroundLocation.tripId} , driverId : \\${backgroundLocation.driverId}');
-
           if (socketService.socket.connected) {
             final currentLocation = backgroundLocation.currentLocation;
             final tripId = backgroundLocation.tripId;
@@ -80,12 +78,10 @@ void onStart(ServiceInstance service) {
               final lastSentLocation = backgroundLocation.lastSentLocation;
               final lastSentTripId = backgroundLocation.lastSentTripId;
               final lastSentDriverId = backgroundLocation.lastSentDriverId;
-
               bool locationChanged =
                   _hasLocationChanged(currentLocation, lastSentLocation);
               bool tripIdChanged = tripId != lastSentTripId;
               bool driverIdChanged = driverId != lastSentDriverId;
-
               if (locationChanged || tripIdChanged || driverIdChanged) {
                 debugPrint('Socket connected - sending updated location');
                 socketService.sendMessage('location', {
