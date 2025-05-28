@@ -145,6 +145,25 @@ plugins {
 
   ```
 
+- `tripStatusListener`: A callback function that listens for changes in the trip status. Use this to handle updates such as trip start, progress, completion, or cancellation, allowing your app to respond accordingly.
+
+``` dart
+  GoogleMapConfig.tripStatusListener.listen((status) {
+    debugPrint("Trip Status: $status");
+    switch (status) {
+      case TripStatus.driverArrived:
+        debugPrint("Driver has arrived to user.");
+        break;
+      case TripStatus.completed:
+        debugPrint("Trip has been completed.");
+        break;
+      case TripStatus.cancelled:
+        debugPrint("Trip has been cancelled.");
+        break;
+    }
+  });
+  ```
+
 - To use the Google Map Routing widget in your app, simply include it in your widget tree. For example:
 
 ```dart

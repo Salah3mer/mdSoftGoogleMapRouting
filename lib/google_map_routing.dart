@@ -79,7 +79,12 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
               context: context,
               notificationType: ToastificationType.success,
             );
+            if (state.isecRoute > 1) {
+              GoogleMapConfig.tripStatusController.add(TripStatus.completed);
+            }
             if (state.isecRoute <= 1) {
+              GoogleMapConfig.tripStatusController
+                  .add(TripStatus.driverArrived);
               var cubit = context.read<GoogleMapCubit>();
               cubit.polyLines.clear();
               cubit.markers.clear();
@@ -267,3 +272,4 @@ void _stopTracking() {
   locationService.stopTracking();
   debugPrint("Tracking and background service have been stopped.");
 }
+

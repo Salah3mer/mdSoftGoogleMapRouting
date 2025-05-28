@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   if (!kIsWeb) {
     await Permission.notification.isDenied.then((value) async {
       if (value) {
@@ -23,8 +24,22 @@ void main() async {
   }
 
   GoogleMapConfig.initialize(
-      apiKey: 'API_KEY',
-      socketBaseUrl: 'http://192.168.1.24:3000/');
+      apiKey: 'API_KEY', socketBaseUrl: 'http://192.168.1.24:3000/');
+
+  GoogleMapConfig.tripStatusListener.listen((status) {
+    debugPrint("Trip Status: $status");
+    switch (status) {
+      case TripStatus.driverArrived:
+        debugPrint("Driver has arrived to user.");
+        break;
+      case TripStatus.completed:
+        debugPrint("Trip has been completed.");
+        break;
+      case TripStatus.cancelled:
+        debugPrint("Trip has been cancelled.");
+        break;
+    }
+  });
   runApp(const MyApp());
 }
 
