@@ -172,7 +172,7 @@ plugins {
   mapStyle: 'assets/json/map_style.json', // Path to your custom map style JSON file.
   startLocation: MdSoftLatLng(30.7052, 31.2677), // Define the start location.
   endLocation: MdSoftLatLng(30.706341997359363, 31.26516825147782), // Define the destination.
-  carPosstion: MdSoftLatLng(30.706341997359363, 31.26516825147782), // Posstion the Car Location.
+  carPosstion: MdSoftLatLng(30.706341997359363, 31.26516825147782), // Posstion the Car Location if it not exist   MdSoftLatLng(0,0).
   waypoints : [MdSoftLatLng(30.7052, 31.2677),MdSoftLatLng(30.7052, 31.2677)]  , //Define waypoints as List of MdSoftLatLng objects.
   pontsName:['startPointName', 'endPointName' ...[list of waypoints name]], // you must send  'startPointName', 'endPointName' ,  Define waypoints name as List of String.
   floatingActionButtonIcon:
