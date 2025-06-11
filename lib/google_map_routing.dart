@@ -212,8 +212,13 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
       onMapCreated: (GoogleMapController controller) async {
         widget.cubit.googleMapController = controller;
         widget.cubit.getMapStyle(mapStyle: widget.mapStyle!);
-        await widget.cubit.getLocationMyCurrentLocation().then((_) {
+        await widget.cubit
+            .getLocationMyCurrentLocation(
+                carPosition: widget.carPosition.googleLatLng,
+                isUser: widget.isUser)
+            .then((_) {
           widget.cubit.getDirectionsRoute(
+            isUser: widget.isUser,
             origin: widget.isUser
                 ? widget.carPosition.googleLatLng
                 : widget.cubit.currentLocation,
@@ -272,4 +277,3 @@ void _stopTracking() {
   locationService.stopTracking();
   debugPrint("Tracking and background service have been stopped.");
 }
-

@@ -61,17 +61,25 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
   }
 
 //? getLocation
-  Future<void> getLocationMyCurrentLocation() async {
+  Future<void> getLocationMyCurrentLocation(
+      {bool isUser = false, LatLng? carPosition}) async {
     try {
-      LocationData locationData = await locationService.getLocation();
-      currentLocation = LatLng(locationData.latitude!, locationData.longitude!);
+      if (isUser) {
+        currentLocation = LatLng(carPosition!.latitude, carPosition.longitude);
+        carLocation = currentLocation;
+      } else {
+        LocationData locationData = await locationService.getLocation();
+        currentLocation =
+            LatLng(locationData.latitude!, locationData.longitude!);
+      }
       var myCameraPosition = CameraPosition(target: currentLocation, zoom: 17);
       googleMapController?.animateCamera(
         CameraUpdate.newCameraPosition(
           myCameraPosition,
         ),
       );
-      updateCarMarker();
+
+      updateCarMarker(isUser: isUser);
 
       emit(GetLocationSuccessState());
     } on LocationServiceException catch (_) {
@@ -243,13 +251,13 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
 
   //? getDirections
   DirctionRouteModel? routeModel;
-  // destination is already defined above as LatLng?
   Future<void> getDirectionsRoute({
     required LatLng origin,
     required LatLng destinationLocation,
     required List<MdSoftLatLng> waypoints,
     required List<String> pointsName,
     bool isFromDriverToUser = false,
+    bool isUser = false,
   }) async {
     final latlonWaypoints =
         waypoints.map((e) => LatLng(e.latitude, e.longitude)).toList();
@@ -266,12 +274,12 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
         routeModel = r;
         destination = destinationLocation;
         await setMarkers(
-          startLocation: origin,
-          destination: destinationLocation,
-          pointsName: pointsName,
-          waypoints: latlonWaypoints,
-          isFromDriverToUser: isFromDriverToUser,
-        );
+            startLocation: origin,
+            destination: destinationLocation,
+            pointsName: pointsName,
+            waypoints: latlonWaypoints,
+            isFromDriverToUser: isFromDriverToUser,
+            isUser: isUser);
         await getBounds(routeModel!.coordinates);
         updateRoute(origin);
         emit(GetDirectionsSuccessState());

@@ -24,7 +24,8 @@ void main() async {
   }
 
   GoogleMapConfig.initialize(
-      apiKey: 'API_KEY', socketBaseUrl: 'http://192.168.1.24:3000/');
+      apiKey: 'API_KEY_HERE',
+      socketBaseUrl: 'http://192.168.1.58:1210/');
 
   GoogleMapConfig.tripStatusListener.listen((status) {
     debugPrint("Trip Status: $status");
@@ -81,18 +82,23 @@ class MapScreen extends StatelessWidget {
         ],
       ),
       body: MdSoftGoogleMapRouting(
-        isUser: false,
+        isUser: true,
         mapStyle: 'assets/json/map_style.json',
-        waypoints: [
-          MdSoftLatLng(30.704706366785057, 31.267074854681997),
-          MdSoftLatLng(30.70392502951272, 31.264789095920797)
+        waypoints: const [
+          // MdSoftLatLng(30.704706366785057, 31.267074854681997),
+          // MdSoftLatLng(30.70392502951272, 31.264789095920797)
         ],
-        tripId: '68282a449ecce815f860380e',
-        driverId: '681c78ebe04c524a3c90a238',
-        pointsName: const ['point1', 'point2', 'point3', 'point4'],
-        startLocation: MdSoftLatLng(30.7052, 31.2677),
-        endLocation: MdSoftLatLng(30.706962805337074, 31.264019357862757),
-        carPosstion: MdSoftLatLng(30.706962805337074, 31.264019357862757),
+        tripId: '6849443fc18ee0129c3b7ee8',
+        driverId: '68481db7e4d29e0b70233043',
+        pointsName: const [
+          'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
+          'غداد - ٧ نيسان - الفضلية - الفضلية، بغداد، بغداد محافظة،',
+          'point3',
+          'point4'
+        ],
+        startLocation: MdSoftLatLng(33.324109627459805, 44.454690468237736),
+        endLocation: MdSoftLatLng(33.3389507346804, 44.5090551674366),
+        carPosstion: MdSoftLatLng(33.29801593950077, 44.350535916400325),
       ),
     );
   }
