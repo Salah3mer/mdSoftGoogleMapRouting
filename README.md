@@ -168,6 +168,15 @@ plugins {
 
 ```dart
   MdSoftGoogleMapRouting(
+  isViewTrip : false , // its by defalut  false if you wont just to see trip make it true 
+  
+// 1 - make the car location start location 
+// 2 - make the start location end location  
+// 3 - make the end  location MdSoftLatLong (0,0) 
+//? you can send way points  if it exist it will be shown like view 
+   
+  tripId: '6849443fc18ee0129c3b7ee8',
+  driverId: '68481db7e4d29e0b70233043',
   isUser : false,  // true or false if  it user or admin  make it true  if  it driver make it false the default is false
   mapStyle: 'assets/json/map_style.json', // Path to your custom map style JSON file.
   startLocation: MdSoftLatLng(30.7052, 31.2677), // Define the start location.
@@ -175,6 +184,4 @@ plugins {
   carPosstion: MdSoftLatLng(30.706341997359363, 31.26516825147782), // Posstion the Car Location if it not exist   MdSoftLatLng(0,0).
   waypoints : [MdSoftLatLng(30.7052, 31.2677),MdSoftLatLng(30.7052, 31.2677)]  , //Define waypoints as List of MdSoftLatLng objects.
   pontsName:['startPointName', 'endPointName' ...[list of waypoints name]], // you must send  'startPointName', 'endPointName' ,  Define waypoints name as List of String.
-  floatingActionButtonIcon:
-      const Icon(Icons.my_location, color: Colors.black), // Custom FAB icon.
 ),
