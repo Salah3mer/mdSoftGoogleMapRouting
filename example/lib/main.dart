@@ -24,8 +24,7 @@ void main() async {
   }
 
   GoogleMapConfig.initialize(
-      apiKey: 'API_KEY_HERE',
-      socketBaseUrl: 'http://192.168.1.58:1210/');
+      apiKey: 'API_KEY_HERE', socketBaseUrl: 'http://192.168.1.58:1210/');
 
   GoogleMapConfig.tripStatusListener.listen((status) {
     debugPrint("Trip Status: $status");
@@ -83,22 +82,23 @@ class MapScreen extends StatelessWidget {
       ),
       body: MdSoftGoogleMapRouting(
         isUser: true,
+        isViewTrip: false,
         mapStyle: 'assets/json/map_style.json',
-        waypoints: const [
-          // MdSoftLatLng(30.704706366785057, 31.267074854681997),
-          // MdSoftLatLng(30.70392502951272, 31.264789095920797)
+        waypoints: [
+          MdSoftLatLng(33.35403511061299, 44.17075417935848),
+          MdSoftLatLng(33.2148730014512, 44.209555350244045)
         ],
         tripId: '6849443fc18ee0129c3b7ee8',
         driverId: '68481db7e4d29e0b70233043',
         pointsName: const [
           'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
           'غداد - ٧ نيسان - الفضلية - الفضلية، بغداد، بغداد محافظة،',
-          'point3',
-          'point4'
+          'العراق',
+          'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
         ],
-        startLocation: MdSoftLatLng(33.324109627459805, 44.454690468237736),
-        endLocation: MdSoftLatLng(33.3389507346804, 44.5090551674366),
-        carPosstion: MdSoftLatLng(33.29801593950077, 44.350535916400325),
+        startLocation: MdSoftLatLng(33.106947521560706, 44.43735335022211),
+        endLocation: MdSoftLatLng(33.106947521560706, 44.43735335022211),
+        carPosstion: MdSoftLatLng(33.324109627459805, 44.454690468237736),
       ),
     );
   }

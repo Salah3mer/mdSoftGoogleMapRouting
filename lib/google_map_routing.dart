@@ -27,6 +27,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
   final MdSoftLatLng carPosstion;
   final String? tripId;
   final String? driverId;
+  final bool isViewTrip;
 
   const MdSoftGoogleMapRouting({
     super.key,
@@ -39,6 +40,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
     required this.carPosstion,
     this.tripId,
     this.driverId,
+    this.isViewTrip = false,
   });
 
   /// test
@@ -104,6 +106,7 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
             body: Stack(
               children: [
                 GoogleMapWidget(
+                    isViewTrip: isViewTrip,
                     tripId: tripId,
                     driverId: driverId,
                     carPosition: carPosstion,
@@ -134,11 +137,13 @@ class GoogleMapWidget extends StatefulWidget {
     required this.endLocation,
     required this.isUser,
     required this.carPosition,
+    required this.isViewTrip,
     this.tripId,
     this.driverId,
   });
 
   final bool isUser;
+  final bool isViewTrip;
   final List<String> pointsName;
   final GoogleMapCubit cubit;
   final String? mapStyle;
@@ -158,6 +163,8 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
   @override
   void initState() {
     super.initState();
+    print(
+        "GoogleMapWidget initState called with tripId: ${widget.tripId}, driverId: ${widget.driverId} isUser: ${widget.isUser} isViewTrip: ${widget.isViewTrip} carPosition: ${widget.carPosition.googleLatLng} startLocation: ${widget.startLocation.googleLatLng} endLocation: ${widget.endLocation.googleLatLng} waypoints: ${widget.waypoints.map((e) => e.googleLatLng).toList()} pointsName: ${widget.pointsName} mapStyle: ${widget.mapStyle} ");
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SocketService socketService = SocketService()..initializeSocket();
@@ -224,11 +231,13 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
                 : widget.cubit.currentLocation,
             isFromDriverToUser: true,
             destinationLocation: widget.startLocation.googleLatLng,
-            waypoints: [],
-            pointsName: [
-              'Current Location For the Driver',
-              widget.pointsName[0],
-            ],
+            waypoints: widget.isViewTrip ? widget.waypoints : [],
+            pointsName: widget.isViewTrip
+                ? widget.pointsName
+                : [
+                    'Current Location For the Driver',
+                    widget.pointsName[0],
+                  ],
           );
         });
       },
