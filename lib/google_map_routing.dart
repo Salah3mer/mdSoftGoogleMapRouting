@@ -81,22 +81,22 @@ class MdSoftGoogleMapRouting extends StatelessWidget {
               context: context,
               notificationType: ToastificationType.success,
             );
-            if (state.isecRoute > 1) {
-              GoogleMapConfig.tripStatusController.add(TripStatus.completed);
-            }
-            if (state.isecRoute <= 1) {
-              GoogleMapConfig.tripStatusController
-                  .add(TripStatus.driverArrived);
-              var cubit = context.read<GoogleMapCubit>();
-              cubit.polyLines.clear();
-              cubit.markers.clear();
-              cubit.getDirectionsRoute(
-                origin: startLocation.googleLatLng,
-                destinationLocation: endLocation.googleLatLng,
-                waypoints: waypoints,
-                pointsName: pointsName,
-              );
-            }
+            // if (state.isecRoute > 1) {
+            //   GoogleMapConfig.tripStatusController.add(TripStatus.completed);
+            // }
+            // if (state.isecRoute <= 1) {
+            //   GoogleMapConfig.tripStatusController
+            //       .add(TripStatus.driverArrived);
+            //   var cubit = context.read<GoogleMapCubit>();
+            //   cubit.polyLines.clear();
+            //   cubit.markers.clear();
+            //   cubit.getDirectionsRoute(
+            //     origin: startLocation.googleLatLng,
+            //     destinationLocation: endLocation.googleLatLng,
+            //     waypoints: waypoints,
+            //     pointsName: pointsName,
+            //   );
+            // }
           }
         },
         builder: (context, state) {
@@ -167,8 +167,33 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
         "GoogleMapWidget initState called with tripId: ${widget.tripId}, driverId: ${widget.driverId} isUser: ${widget.isUser} isViewTrip: ${widget.isViewTrip} carPosition: ${widget.carPosition.googleLatLng} startLocation: ${widget.startLocation.googleLatLng} endLocation: ${widget.endLocation.googleLatLng} waypoints: ${widget.waypoints.map((e) => e.googleLatLng).toList()} pointsName: ${widget.pointsName} mapStyle: ${widget.mapStyle} ");
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-  
       if (widget.isUser) {
+        {
+          GoogleMapConfig.tripStatusListener.listen((status) {
+            debugPrint("Trip Status: $status");
+            switch (status) {
+              case TripStatus.driverArrived:
+                {
+                  var cubit = widget.cubit;
+                  cubit.polyLines.clear();
+                  cubit.markers.clear();
+                  cubit.getDirectionsRoute(
+                    origin: cubit.carLocation!,
+                    destinationLocation: widget.endLocation.googleLatLng,
+                    waypoints: widget.waypoints,
+                    pointsName: widget.pointsName,
+                  );
+                }
+                break;
+              case TripStatus.completed:
+                debugPrint("Trip has been completed.");
+                break;
+              case TripStatus.cancelled:
+                debugPrint("Trip has been cancelled.");
+                break;
+            }
+          });
+        }
         _initLocationForUser();
       } else {
         BackGroundService().initializeService().then((_) {

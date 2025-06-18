@@ -80,25 +80,41 @@ class MapScreen extends StatelessWidget {
               )),
         ],
       ),
-      body: MdSoftGoogleMapRouting(
-        isUser: true,
-        isViewTrip: false,
-        mapStyle: 'assets/json/map_style.json',
-        // waypoints: [
-        //   MdSoftLatLng(33.35403511061299, 44.17075417935848),
-        //   MdSoftLatLng(33.2148730014512, 44.209555350244045)
-        // ],
-        tripId: '685279422d0fd21d948a0a59',
-        // driverId: '68481db7e4d29e0b70233043',
-        pointsName: const [
-          'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
-          'غداد - ٧ نيسان - الفضلية - الفضلية، بغداد، بغداد محافظة،',
-          // 'العراق',
-          // 'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: MdSoftGoogleMapRouting(
+              isUser: true,
+              // isViewTrip: false,
+              mapStyle: 'assets/json/map_style.json',
+              // waypoints: [
+              //   MdSoftLatLng(33.35403511061299, 44.17075417935848),
+              //   MdSoftLatLng(33.2148730014512, 44.209555350244045)
+              // ],
+              tripId: '685279422d0fd21d948a0a59',
+              // driverId: '68481db7e4d29e0b70233043',
+              pointsName: const [
+                'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
+                'غداد - ٧ نيسان - الفضلية - الفضلية، بغداد، بغداد محافظة،',
+                // 'العراق',
+                // 'بغداد - ٧ نيسان - زيونة - 712-18، بغداد، بغداد محافظة، العراق',
+              ],
+              startLocation: MdSoftLatLng(33.3359333, 44.3565117),
+              endLocation: MdSoftLatLng(33.31988132874132, 44.330820702016354),
+              carPosstion: MdSoftLatLng(33.26444, 44.3105317),
+            ),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: ElevatedButton(
+                onPressed: () {
+                  GoogleMapConfig.tripStatusController
+                      .add(TripStatus.driverArrived);
+                },
+                child: const Text('Start Trip')),
+          ),
         ],
-        startLocation: MdSoftLatLng(33.3359333, 44.3565117),
-        endLocation: MdSoftLatLng(33.31988132874132, 44.330820702016354),
-        carPosstion: MdSoftLatLng(33.26444, 44.3105317),
       ),
     );
   }
