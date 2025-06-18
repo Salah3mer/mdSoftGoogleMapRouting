@@ -167,8 +167,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
         "GoogleMapWidget initState called with tripId: ${widget.tripId}, driverId: ${widget.driverId} isUser: ${widget.isUser} isViewTrip: ${widget.isViewTrip} carPosition: ${widget.carPosition.googleLatLng} startLocation: ${widget.startLocation.googleLatLng} endLocation: ${widget.endLocation.googleLatLng} waypoints: ${widget.waypoints.map((e) => e.googleLatLng).toList()} pointsName: ${widget.pointsName} mapStyle: ${widget.mapStyle} ");
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      SocketService socketService = SocketService()..initializeSocket();
-      socketService.sendMessage('joinTripRoom', widget.tripId);
+  
       if (widget.isUser) {
         _initLocationForUser();
       } else {
@@ -193,7 +192,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget>
   }
 
   void _initLocationForUser() async {
-    await widget.cubit.initializeDataAndSocket();
+    await widget.cubit.initializeDataAndSocket(tripId: widget.tripId!);
   }
 
   @override

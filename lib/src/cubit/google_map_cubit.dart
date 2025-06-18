@@ -189,10 +189,14 @@ class GoogleMapCubit extends Cubit<GoogleMapState> {
 
   late SocketService socketService = SocketService();
 
-  Future<void> initializeDataAndSocket({bool isSec = false}) async {
+  Future<void> initializeDataAndSocket(
+      {bool isSec = false, required String tripId}) async {
     try {
       _hasEmittedDestinationReached = false;
-      socketService.initializeSocket();
+      SocketService socketService = SocketService()..initializeSocket();
+      socketService.sendMessage('joinTripRoom', {
+        'tripId': tripId,
+      });
       socketService.onMessage('locationUpdate', (locationData) async {
         if (locationData != null) {}
         if (locationData['latitude'] == null ||
